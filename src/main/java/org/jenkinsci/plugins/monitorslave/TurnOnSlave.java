@@ -43,7 +43,9 @@ import java.io.IOException;
  * @author Arun Suresh
  */
 public class TurnOnSlave extends ManageSlaveBuildStep {
-
+	private static final int IS_ONLINE=1;
+	private static final int IS_OFFLINE=-1;
+	
     private String slaveName;
     private String goalType;
 
@@ -86,13 +88,36 @@ public class TurnOnSlave extends ManageSlaveBuildStep {
     				listener.getLogger().println(computer.getDisplayName()+" is connecting");
     				computer.setTemporarilyOffline(false);
     				computer.connect(true);
+    				int computerStatus=waitForComputerToComeOnline(computer);
+    				if(computerStatus==-1){
+    					try {
+							throw new Exception(computer.getDisplayName()+"not connected yet");
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+    				}
+    				else{
+    					listener.getLogger().println(computer.getDisplayName()+" is connected");
+    				}
     			}				
     		}
     }   
         return true;
     }
 
-    
+    private int waitForComputerToComeOnline(Computer computer) throws InterruptedException{
+    	int i=0;
+    	while(computer.isOffline() && i<60){
+    		Thread.sleep(4000);
+    		i++;
+    	}
+    	
+    	if(i>=60){
+    		return IS_OFFLINE;
+    	}
+    	
+    	return IS_ONLINE;
+    }
 
     /**
      * Descriptor for {@link TurnOnSlave}. Used as a singleton.
