@@ -1,4 +1,5 @@
 package org.jenkinsci.plugins.monitorslave;
+import hudson.EnvVars;
 import hudson.Launcher;
 import hudson.Extension;
 import hudson.util.FormValidation;
@@ -75,11 +76,14 @@ public class TurnOffSlave extends ManageSlaveBuildStep {
 
     @Override
     public boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
-        // This is where you 'build' the project.
+    	
+    	EnvVars env = build.getEnvironment(listener);
+    	String expandedSlaveName = env.expand(slaveName);
+    	
     	Hudson jenkins=Hudson.getInstance();
     	for (Computer computer:jenkins.getComputers()) {
     			listener.getLogger().println(computer.getDisplayName()+" is online");
-    			if(computer.getDisplayName().equals(slaveName) && goalType.equals("off")){
+    			if(computer.getDisplayName().equals(expandedSlaveName) && goalType.equals("off")){
     				listener.getLogger().println("Marking "+computer.getDisplayName()+" as temporarily offline");
     				computer.setTemporarilyOffline(true);
     			}
