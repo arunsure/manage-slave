@@ -12,7 +12,7 @@ import net.sf.json.JSONObject;
 import hudson.model.*;
 import hudson.node_monitors.*;
 import hudson.slaves.*;
-import hudson.slaves.OfflineCause.SimpleOfflineCause;
+import hudson.slaves.OfflineCause.UserCause;
 
 import java.util.concurrent.*;
 
@@ -25,6 +25,8 @@ import org.kohsuke.stapler.export.Exported;
 import javax.servlet.ServletException;
 
 import java.io.IOException;
+
+import jenkins.model.Jenkins;
 
 /**
  *
@@ -80,14 +82,16 @@ public class TurnOffSlave extends ManageSlaveBuildStep {
     	EnvVars env = build.getEnvironment(listener);
     	String expandedSlaveName = env.expand(slaveName);
     	
-    	Hudson jenkins=Hudson.getInstance();
+    	Jenkins jenkins=Jenkins.getInstance();
     	for (Computer computer:jenkins.getComputers()) {
     			listener.getLogger().println(computer.getDisplayName()+" is online");
     			if(computer.getDisplayName().equals(expandedSlaveName) && goalType.equals("off")){
+    				User user = jenkins.getMe();
+    				OfflineCause offlineCause = new UserCause(user, "VM is going to be deleted");
     				listener.getLogger().println("Marking "+computer.getDisplayName()+" as temporarily offline");
-    				computer.setTemporarilyOffline(true);
+    				computer.setTemporarilyOffline(true, offlineCause);
     			}
-    }
+    	}
     	return true;
     }
     

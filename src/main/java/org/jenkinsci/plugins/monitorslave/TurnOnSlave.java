@@ -26,6 +26,8 @@ import javax.servlet.ServletException;
 
 import java.io.IOException;
 
+import jenkins.model.Jenkins;
+
 /**
  *
  * <p>
@@ -80,13 +82,13 @@ public class TurnOnSlave extends ManageSlaveBuildStep {
     public boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
     	EnvVars env = build.getEnvironment(listener);
     	String expandedSlaveName = env.expand(slaveName);
-    	Hudson jenkins=Hudson.getInstance();
+    	Jenkins jenkins=Jenkins.getInstance();
     	for (Computer computer:jenkins.getComputers()) {
     		if (computer.isOffline()){
     			listener.getLogger().println(computer.getDisplayName()+" is offline");
     			if(computer.getDisplayName().equals(expandedSlaveName) && goalType.equals("on")){
+    				computer.setTemporarilyOffline(false, null);
     				listener.getLogger().println(computer.getDisplayName()+" is connecting");
-    				computer.setTemporarilyOffline(false);
     				computer.connect(true);
     				int computerStatus=waitForComputerToComeOnline(computer);
     				if(computerStatus==-1){
@@ -96,7 +98,7 @@ public class TurnOnSlave extends ManageSlaveBuildStep {
 							e.printStackTrace();
 						}
     				}
-    				else{
+    				else{	
     					listener.getLogger().println(computer.getDisplayName()+" is connected");
     				}
     			}				
