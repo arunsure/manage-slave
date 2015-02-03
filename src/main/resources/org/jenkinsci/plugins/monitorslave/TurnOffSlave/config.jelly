@@ -16,7 +16,6 @@
 
 <f:entry title="${%Goal Type}" field="goalType">
     <select name="goalType">
-        <option value="on">Switch on slave</option>
         <option value="off">Switch off slave</option>
     </select>
 </f:entry>

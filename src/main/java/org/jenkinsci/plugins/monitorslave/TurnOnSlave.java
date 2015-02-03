@@ -15,6 +15,7 @@ import hudson.slaves.OfflineCause.SimpleOfflineCause;
 
 import java.util.concurrent.*;
 
+import org.jenkinsci.plugins.buildstep.ManageSlaveBuildStep;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.QueryParameter;
@@ -28,8 +29,8 @@ import java.io.IOException;
  *
  * <p>
  * When the user configures the project and enables this builder,
- * {@link DescriptorImpl#newInstance(StaplerRequest)} is invoked
- * and a new {@link MonitorSlaveBuilder} is created. The created
+ * {@link TurnOnSlaveDescriptor#newInstance(StaplerRequest)} is invoked
+ * and a new {@link TurnOnSlave} is created. The created
  * instance is persisted to the project configuration XML by using
  * XStream, so this allows you to use instance fields (like {@link #slaveName})
  * to remember the configuration.
@@ -40,14 +41,14 @@ import java.io.IOException;
  *
  * @author Arun Suresh
  */
-public class MonitorSlaveBuilder extends Builder {
+public class TurnOnSlave extends ManageSlaveBuildStep {
 
     private String slaveName;
     private String goalType;
 
     // Fields in config.jelly must match the parameter names in the "DataBoundConstructor"
     @DataBoundConstructor
-    public MonitorSlaveBuilder(String slaveName, String goalType) {
+    public TurnOnSlave(String slaveName, String goalType) {
         this.slaveName = slaveName;
         this.goalType = goalType;
     }
@@ -82,37 +83,21 @@ public class MonitorSlaveBuilder extends Builder {
     			if(computer.getDisplayName().equals(slaveName) && goalType.equals("on")){
     				listener.getLogger().println(computer.getDisplayName()+" is connecting");
     				computer.setTemporarilyOffline(false);
-    				computer.connect(false);
+    				computer.connect(true);
     			}				
     		}
-    		else
-    		{
-    			listener.getLogger().println(computer.getDisplayName()+" is online");
-    			if(computer.getDisplayName().equals(slaveName) && goalType.equals("off")){
-    				listener.getLogger().println("Marking "+computer.getDisplayName()+" as temporarily offline");
-    				computer.setTemporarilyOffline(true);;
-    			}
-    			
-    		}	 
     }   
         return true;
     }
 
-    // Overridden for better type safety.
-    // If your plugin doesn't really define any property on Descriptor,
-    // you don't have to do this.
-    @Override
-    public DescriptorImpl getDescriptor() {
-        return (DescriptorImpl)super.getDescriptor();
-    }
     
 
     /**
-     * Descriptor for {@link MonitorSlaveBuilder}. Used as a singleton.
+     * Descriptor for {@link TurnOnSlave}. Used as a singleton.
      * The class is marked as public so that it can be accessed from views.
      */
     @Extension // This indicates to Jenkins that this is an implementation of an extension point.
-    public static final class DescriptorImpl extends BuildStepDescriptor<Builder> {
+    public static final class TurnOnSlaveDescriptor extends ManageSlaveBuildStepDescriptor {
         /**
          * To persist global configuration information,
          * simply store it in a field and call save().
@@ -125,7 +110,7 @@ public class MonitorSlaveBuilder extends Builder {
          * In order to load the persisted global configuration, you have to 
          * call load() in the constructor.
          */
-        public DescriptorImpl() {
+        public TurnOnSlaveDescriptor() {
             load();
         }
 
@@ -160,7 +145,7 @@ public class MonitorSlaveBuilder extends Builder {
 
 		@Override
 		public String getDisplayName() {
-			return null;
+			return "Turn on slave";
 		}
 
     }
