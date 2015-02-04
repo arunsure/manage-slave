@@ -47,13 +47,11 @@ import jenkins.model.Jenkins;
 public class TurnOffSlave extends ManageSlaveBuildStep {
 
     private String slaveName;
-    private String goalType;
 
     // Fields in config.jelly must match the parameter names in the "DataBoundConstructor"
     @DataBoundConstructor
     public TurnOffSlave(String slaveName, String goalType) {
         this.slaveName = slaveName;
-        this.goalType = goalType;
     }
 
     /**
@@ -63,18 +61,9 @@ public class TurnOffSlave extends ManageSlaveBuildStep {
         return slaveName;
     }
     
-    public String getGoalType(){
-    	return goalType;
-    }
-    
     public void setSlaveName(String slaveName){
     	this.slaveName=slaveName;
     }
-    
-    public void setGoalType(String goalType){
-    	this.goalType=goalType;
-    }
-    
 
     @Override
     public boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
@@ -84,12 +73,12 @@ public class TurnOffSlave extends ManageSlaveBuildStep {
     	
     	Jenkins jenkins=Jenkins.getInstance();
     	for (Computer computer:jenkins.getComputers()) {
-    			listener.getLogger().println(computer.getDisplayName()+" is online");
-    			if(computer.getDisplayName().equals(expandedSlaveName) && goalType.equals("off")){
+    			if(computer.getDisplayName().equals(expandedSlaveName)){
     				User user = jenkins.getMe();
     				OfflineCause offlineCause = new UserCause(user, "VM is going to be deleted");
     				listener.getLogger().println("Marking "+computer.getDisplayName()+" as temporarily offline");
     				computer.setTemporarilyOffline(true, offlineCause);
+    				computer.disconnect(offlineCause);
     			}
     	}
     	return true;

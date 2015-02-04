@@ -13,12 +13,4 @@
 <f:entry title="${%Slave Name}" field="slaveName">
     <f:textbox />
 </f:entry>
-
-<f:entry title="${%Goal Type}" field="goalType">
-    <select name="goalType">
-        <option value="on">Switch on slave</option>
-    </select>
-</f:entry>
-
-
 </j:jelly>

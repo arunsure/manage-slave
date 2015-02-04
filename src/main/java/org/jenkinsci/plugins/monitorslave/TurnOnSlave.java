@@ -49,13 +49,11 @@ public class TurnOnSlave extends ManageSlaveBuildStep {
 	private static final int IS_OFFLINE=-1;
 	
     private String slaveName;
-    private String goalType;
 
     // Fields in config.jelly must match the parameter names in the "DataBoundConstructor"
     @DataBoundConstructor
     public TurnOnSlave(String slaveName, String goalType) {
         this.slaveName = slaveName;
-        this.goalType = goalType;
     }
 
     /**
@@ -65,18 +63,9 @@ public class TurnOnSlave extends ManageSlaveBuildStep {
         return slaveName;
     }
     
-    public String getGoalType(){
-    	return goalType;
-    }
-    
     public void setSlaveName(String slaveName){
     	this.slaveName=slaveName;
     }
-    
-    public void setGoalType(String goalType){
-    	this.goalType=goalType;
-    }
-    
 
     @Override
     public boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
@@ -85,8 +74,7 @@ public class TurnOnSlave extends ManageSlaveBuildStep {
     	Jenkins jenkins=Jenkins.getInstance();
     	for (Computer computer:jenkins.getComputers()) {
     		if (computer.isOffline()){
-    			listener.getLogger().println(computer.getDisplayName()+" is offline");
-    			if(computer.getDisplayName().equals(expandedSlaveName) && goalType.equals("on")){
+    			if(computer.getDisplayName().equals(expandedSlaveName)){
     				computer.setTemporarilyOffline(false, null);
     				listener.getLogger().println(computer.getDisplayName()+" is connecting");
     				computer.connect(true);
