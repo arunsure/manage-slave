@@ -32,8 +32,8 @@ import jenkins.model.Jenkins;
  *
  * <p>
  * When the user configures the project and enables this builder,
- * {@link TurnOnSlaveDescriptor#newInstance(StaplerRequest)} is invoked
- * and a new {@link TurnOnSlave} is created. The created
+ * {@link AddLabelsDescriptor#newInstance(StaplerRequest)} is invoked
+ * and a new {@link AddLabels} is created. The created
  * instance is persisted to the project configuration XML by using
  * XStream, so this allows you to use instance fields (like {@link #slaveName})
  * to remember the configuration.
@@ -44,16 +44,16 @@ import jenkins.model.Jenkins;
  *
  * @author Arun Suresh
  */
-public class TurnOnSlave extends ManageSlaveBuildStep {
-	private static final int IS_ONLINE=1;
-	private static final int IS_OFFLINE=-1;
+public class AddLabels extends ManageSlaveBuildStep {
 	
     private String slaveName;
+    private String labels;
 
     // Fields in config.jelly must match the parameter names in the "DataBoundConstructor"
     @DataBoundConstructor
-    public TurnOnSlave(String slaveName) {
+    public AddLabels(String slaveName, String labels) {
         this.slaveName = slaveName;
+        this.labels = labels;
     }
 
     /**
@@ -63,58 +63,37 @@ public class TurnOnSlave extends ManageSlaveBuildStep {
         return slaveName;
     }
     
+    public String getlabels() {
+        return labels;
+    }
+    
     public void setSlaveName(String slaveName){
     	this.slaveName=slaveName;
     }
+    
+    public void setLabels(String labels){
+    	this.labels=labels;
+    }
 
     @Override
-    public boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
+    public boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener) throws Exception {
     	EnvVars env = build.getEnvironment(listener);
     	String expandedSlaveName = env.expand(slaveName);
     	Jenkins jenkins=Jenkins.getInstance();
-    	for (Computer computer:jenkins.getComputers()) {
-    		if (computer.isOffline()){
-    			if(computer.getDisplayName().equals(expandedSlaveName)){
-    				computer.setTemporarilyOffline(false, null);
-    				listener.getLogger().println(computer.getDisplayName()+" is connecting");
-    				computer.connect(true);
-    				int computerStatus=waitForComputerToComeOnline(computer);
-    				if(computerStatus==-1){
-    					try {
-							throw new Exception(computer.getDisplayName()+"not connected yet");
-						} catch (Exception e) {
-							e.printStackTrace();
-						}
-    				}
-    				else{	
-    					listener.getLogger().println(computer.getDisplayName()+" is connected");
-    				}
-    			}				
-    		}
-    }   
+    	Computer computer=jenkins.getComputer(expandedSlaveName);
+    	if(computer==null){
+    		throw new Exception("Cannot find slave");
+    	}
+    	computer.getNode().setLabelString(labels);
         return true;
     }
 
-    private int waitForComputerToComeOnline(Computer computer) throws InterruptedException{
-    	int i=0;
-    	while(computer.isOffline() && i<60){
-    		Thread.sleep(4000);
-    		i++;
-    	}
-    	
-    	if(i>=60){
-    		return IS_OFFLINE;
-    	}
-    	
-    	return IS_ONLINE;
-    }
-
     /**
-     * Descriptor for {@link TurnOnSlave}. Used as a singleton.
+     * Descriptor for {@link AddLabels}. Used as a singleton.
      * The class is marked as public so that it can be accessed from views.
      */
     @Extension // This indicates to Jenkins that this is an implementation of an extension point.
-    public static final class TurnOnSlaveDescriptor extends ManageSlaveBuildStepDescriptor {
+    public static final class AddLabelsDescriptor extends ManageSlaveBuildStepDescriptor {
         /**
          * To persist global configuration information,
          * simply store it in a field and call save().
@@ -127,7 +106,7 @@ public class TurnOnSlave extends ManageSlaveBuildStep {
          * In order to load the persisted global configuration, you have to 
          * call load() in the constructor.
          */
-        public TurnOnSlaveDescriptor() {
+        public AddLabelsDescriptor() {
             load();
         }
 
@@ -162,7 +141,7 @@ public class TurnOnSlave extends ManageSlaveBuildStep {
 
 		@Override
 		public String getDisplayName() {
-			return "Turn on slave";
+			return "Add Labels";
 		}
 
     }

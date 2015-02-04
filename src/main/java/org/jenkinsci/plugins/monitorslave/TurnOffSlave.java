@@ -50,7 +50,7 @@ public class TurnOffSlave extends ManageSlaveBuildStep {
 
     // Fields in config.jelly must match the parameter names in the "DataBoundConstructor"
     @DataBoundConstructor
-    public TurnOffSlave(String slaveName, String goalType) {
+    public TurnOffSlave(String slaveName) {
         this.slaveName = slaveName;
     }
 
