@@ -32,8 +32,8 @@ import jenkins.model.Jenkins;
  *
  * <p>
  * When the user configures the project and enables this builder,
- * {@link AddLabelsDescriptor#newInstance(StaplerRequest)} is invoked
- * and a new {@link AddLabels} is created. The created
+ * {@link AppendLabelsDescriptor#newInstance(StaplerRequest)} is invoked
+ * and a new {@link AppendLabels} is created. The created
  * instance is persisted to the project configuration XML by using
  * XStream, so this allows you to use instance fields (like {@link #slaveName})
  * to remember the configuration.
@@ -44,14 +44,14 @@ import jenkins.model.Jenkins;
  *
  * @author Arun Suresh
  */
-public class AddLabels extends ManageSlaveBuildStep {
+public class AppendLabels extends ManageSlaveBuildStep {
 	
     private String slaveName;
     private String labels;
 
     // Fields in config.jelly must match the parameter names in the "DataBoundConstructor"
     @DataBoundConstructor
-    public AddLabels(String slaveName, String labels) {
+    public AppendLabels(String slaveName, String labels) {
         this.slaveName = slaveName;
         this.labels = labels;
     }
@@ -84,16 +84,27 @@ public class AddLabels extends ManageSlaveBuildStep {
     	if(computer==null){
     		throw new Exception("Cannot find slave");
     	}
-    	computer.getNode().setLabelString(labels);
+    	Node node = computer.getNode();
+    	if(computer.getNode().getLabelString()!=null){
+    		String existingLabels=computer.getNode().getLabelString();
+    		String newLabels=existingLabels + " "+ labels;
+    		listener.getLogger().println("New labels: "+newLabels);
+    		listener.getLogger().println("Adding label: "+labels);
+    		node.setLabelString(newLabels);
+    	} else {
+    		listener.getLogger().println("Adding label: "+labels);
+    		node.setLabelString(labels);
+    	}
+    	
         return true;
     }
 
     /**
-     * Descriptor for {@link AddLabels}. Used as a singleton.
+     * Descriptor for {@link AppendLabels}. Used as a singleton.
      * The class is marked as public so that it can be accessed from views.
      */
     @Extension // This indicates to Jenkins that this is an implementation of an extension point.
-    public static final class AddLabelsDescriptor extends ManageSlaveBuildStepDescriptor {
+    public static final class AppendLabelsDescriptor extends ManageSlaveBuildStepDescriptor {
         /**
          * To persist global configuration information,
          * simply store it in a field and call save().
@@ -106,7 +117,7 @@ public class AddLabels extends ManageSlaveBuildStep {
          * In order to load the persisted global configuration, you have to 
          * call load() in the constructor.
          */
-        public AddLabelsDescriptor() {
+        public AppendLabelsDescriptor() {
             load();
         }
 
@@ -141,7 +152,7 @@ public class AddLabels extends ManageSlaveBuildStep {
 
 		@Override
 		public String getDisplayName() {
-			return "Add Labels";
+			return "Append Labels";
 		}
 
     }
