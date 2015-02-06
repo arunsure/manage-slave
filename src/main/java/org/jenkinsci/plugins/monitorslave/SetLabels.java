@@ -79,12 +79,13 @@ public class SetLabels extends ManageSlaveBuildStep {
     public boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener) throws Exception {
     	EnvVars env = build.getEnvironment(listener);
     	String expandedSlaveName = env.expand(slaveName);
+    	String expandedLabels=env.expand(labels);
     	Jenkins jenkins=Jenkins.getInstance();
     	Computer computer=jenkins.getComputer(expandedSlaveName);
     	if(computer==null){
     		throw new Exception("Cannot find slave");
     	}
-    	listener.getLogger().println("Adding label: "+labels);
+    	listener.getLogger().println("Adding label: "+expandedLabels);
     	computer.getNode().setLabelString(labels);
         return true;
     }

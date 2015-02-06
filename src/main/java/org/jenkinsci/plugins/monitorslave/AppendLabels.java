@@ -79,6 +79,7 @@ public class AppendLabels extends ManageSlaveBuildStep {
     public boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener) throws Exception {
     	EnvVars env = build.getEnvironment(listener);
     	String expandedSlaveName = env.expand(slaveName);
+    	String expandedLabels=env.expand(labels);
     	Jenkins jenkins=Jenkins.getInstance();
     	Computer computer=jenkins.getComputer(expandedSlaveName);
     	if(computer==null){
@@ -87,7 +88,7 @@ public class AppendLabels extends ManageSlaveBuildStep {
     	Node node = computer.getNode();
     	if(computer.getNode().getLabelString()!=null){
     		String existingLabels=computer.getNode().getLabelString();
-    		String newLabels=existingLabels + " "+ labels;
+    		String newLabels=existingLabels + " "+ expandedLabels;
     		listener.getLogger().println("New labels: "+newLabels);
     		listener.getLogger().println("Adding label: "+labels);
     		node.setLabelString(newLabels);
