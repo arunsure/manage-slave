@@ -67,20 +67,16 @@ public class TurnOffSlave extends ManageSlaveBuildStep {
 
     @Override
     public boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
-    	
     	EnvVars env = build.getEnvironment(listener);
     	String expandedSlaveName = env.expand(slaveName);
-    	
     	Jenkins jenkins=Jenkins.getInstance();
-    	for (Computer computer:jenkins.getComputers()) {
-    			if(computer.getDisplayName().equals(expandedSlaveName)){
-    				User user = jenkins.getMe();
-    				OfflineCause offlineCause = new UserCause(user, "VM is going to be deleted");
-    				listener.getLogger().println("Marking "+computer.getDisplayName()+" as temporarily offline");
-    				computer.setTemporarilyOffline(true, offlineCause);
-    				computer.disconnect(offlineCause);
-    			}
-    	}
+    	
+    	Computer computer = jenkins.getComputer(expandedSlaveName);
+    	User user = jenkins.getMe();
+		OfflineCause offlineCause = new UserCause(user, "VM is going to be deleted");
+		listener.getLogger().println("Marking "+computer.getDisplayName()+" as temporarily offline");
+		computer.setTemporarilyOffline(true, offlineCause);
+		computer.disconnect(offlineCause);
     	return true;
     }
     

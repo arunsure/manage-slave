@@ -72,26 +72,21 @@ public class TurnOnSlave extends ManageSlaveBuildStep {
     	EnvVars env = build.getEnvironment(listener);
     	String expandedSlaveName = env.expand(slaveName);
     	Jenkins jenkins=Jenkins.getInstance();
-    	for (Computer computer:jenkins.getComputers()) {
-    		if (computer.isOffline()){
-    			if(computer.getDisplayName().equals(expandedSlaveName)){
-    				computer.setTemporarilyOffline(false, null);
-    				listener.getLogger().println(computer.getDisplayName()+" is connecting");
-    				computer.connect(true);
-    				int computerStatus=waitForComputerToComeOnline(computer);
-    				if(computerStatus==-1){
-    					try {
-							throw new Exception(computer.getDisplayName()+"not connected yet");
-						} catch (Exception e) {
-							e.printStackTrace();
-						}
-    				}
-    				else{	
-    					listener.getLogger().println(computer.getDisplayName()+" is connected");
-    				}
-    			}				
-    		}
-    }   
+    	Computer computer = jenkins.getComputer(expandedSlaveName);
+    	computer.setTemporarilyOffline(false, null);
+		listener.getLogger().println(computer.getDisplayName()+" is connecting");
+		computer.connect(true);
+		int computerStatus=waitForComputerToComeOnline(computer);
+		if(computerStatus==-1){
+			try {
+				throw new Exception(computer.getDisplayName()+"not connected ");
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		else{	
+			listener.getLogger().println(computer.getDisplayName()+" is connected");
+		}			
         return true;
     }
 
