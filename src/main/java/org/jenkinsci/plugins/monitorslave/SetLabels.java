@@ -86,7 +86,7 @@ public class SetLabels extends ManageSlaveBuildStep {
     		throw new Exception("Cannot find slave");
     	}
     	listener.getLogger().println("Adding label: "+expandedLabels);
-    	computer.getNode().setLabelString(labels);
+    	computer.getNode().setLabelString(expandedLabels);
         return true;
     }
 
